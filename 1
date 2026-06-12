@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Construction Budget Monitoring</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #f5f5f5; color: #1a1a1a; font-size: 15px; }
+
+  .topbar { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 0 1.5rem; display: flex; align-items: center; gap: 12px; height: 56px; position: sticky; top: 0; z-index: 100; }
+  .topbar h1 { font-size: 16px; font-weight: 600; }
+  .topbar .sub { font-size: 12px; color: #888; margin-left: 4px; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+  .upload-zone { border: 2px dashed #ccc; border-radius: 12px; padding: 2.5rem; text-align: center; cursor: pointer; transition: all 0.15s; background: #fff; margin-bottom: 1.5rem; }
+  .upload-zone:hover, .upload-zone.drag { border-color: #378ADD; background: #f0f7ff; }
+  .upload-zone i { font-size: 36px; color: #aaa; display: block; margin-bottom: 10px; }
+  .upload-zone p { font-size: 14px; color: #666; }
+  .upload-zone .hint { font-size: 12px; color: #aaa; margin-top: 6px; }
+  .upload-zone .loaded { font-size: 13px; color: #1D9E75; margin-top: 8px; font-weight: 600; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+  .card { background: #fff; border-radius: 10px; padding: 1rem 1.25rem; border: 1px solid #e8e8e8; }
+  .card label { font-size: 12px; color: #888; display: block; margin-bottom: 6px; }
+  .card .val { font-size: 22px; font-weight: 600; line-height: 1.2; }
+  .card .sub { font-size: 11px; color: #aaa; margin-top: 3px; }
+  .card.blue .val { color: #185FA5; }
+  .card.green .val { color: #0F6E56; }
+  .card.red .val { color: #A32D2D; }
+  .card.amber .val { color: #854F0B; }
+
+  .section { background: #fff; border-radius: 12px; border: 1px solid #e8e8e8; padding: 1.25rem; margin-bottom: 1rem; }
+  .section h2 { font-size: 14px; font-weight: 600; margin-bottom: 1rem; color: #333; }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 1rem; }
+  .tab { padding: 6px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 1px solid #ddd; background: #fff; color: #666; font-family: inherit; }
+  .tab.active { background: #185FA5; color: #fff; border-color: #185FA5; }
+
+  .controls { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+  .controls input, .controls select { font-size: 13px; padding: 6px 10px; border-radius: 8px; border: 1px solid #ddd; background: #fff; color: #1a1a1a; height: 34px; font-family: inherit; outline: none; }
+  .controls input { flex: 1; min-width: 200px; }
+  .controls input:focus, .controls select:focus { border-color: #378ADD; }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+  th { text-align: left; padding: 8px 10px; font-weight: 600; font-size: 11px; color: #888; border-bottom: 1px solid #eee; white-space: nowrap; background: #fafafa; }
+  td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f9f9f9; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge.ok   { background: #EAF3DE; color: #3B6D11; }
+  .badge.warn { background: #FAEEDA; color: #854F0B; }
+  .badge.over { background: #FCEBEB; color: #A32D2D; }
+  .pbar-wrap { background: #eee; border-radius: 20px; height: 5px; overflow: hidden; margin-top: 3px; }
+  .pbar      { height: 100%; border-radius: 20px; }
+  .pbar.ok   { background: #1D9E75; }
+  .pbar.warn { background: #EF9F27; }
+  .pbar.over { background: #E24B4A; }
+
+  .chart-wrap { position: relative; width: 100%; height: 280px; }
+  .chart-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .chart-row .section { flex: 1; min-width: 280px; }
+
+  .empty { text-align: center; padding: 2rem; color: #bbb; font-size: 13px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .legend-dot  { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .legend-wrap { display: flex; flex-direction: column; gap: 8px; justify-content: center; flex: 1; min-width: 160px; }
+  .remark { font-size: 11px; color: #aaa; margin-top: 8px; }
+
+  @media (max-width: 640px) {
+    .container { padding: 1rem; }
+    .cards { grid-template-columns: 1fr 1fr; }
+    .chart-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <i class="ti ti-chart-bar" style="font-size:22px;color:#185FA5"></i>
+  <h1>Construction Budget Monitoring</h1>
+  <span class="sub" id="asOfLabel"></span>
+</div>
+
+<div class="container">
+
+  <div class="upload-zone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+    <i class="ti ti-upload"></i>
+    <p>คลิกหรือลากไฟล์ Excel (.xlsx) มาวางที่นี่</p>
+    <div class="hint">รองรับไฟล์ BK-CON.xlsx หรือไฟล์ที่มีโครงสร้างเดียวกัน</div>
+    <div class="loaded" id="fname"></div>
+  </div>
+  <input type="file" id="fileInput" accept=".xlsx" style="display:none">
+
+  <div id="dashboard" style="display:none">
+    <div class="cards" id="cards"></div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('projects', this)">รายโครงการ</button>
+      <button class="tab" onclick="showTab('chart', this)">กราฟ</button>
+    </div>
+
+    <div id="tab-projects">
+      <div class="section">
+        <h2>สรุปงบประมาณรายโครงการ</h2>
+        <div class="controls">
+          <input type="text" id="searchBox" placeholder="🔍 ค้นหาโครงการ / รหัส..." oninput="renderTable()">
+          <select id="filterOPM" onchange="renderTable()"><option value="">OPM ทั้งหมด</option></select>
+          <select id="filterStatus" onchange="renderTable()">
+            <option value="">สถานะทั้งหมด</option>
+            <option value="ok">ปกติ (&lt;80%)</option>
+            <option value="warn">ใกล้เต็ม (80–100%)</option>
+            <option value="over">เกินงบ (&gt;100%)</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:40px">No.</th>
+                <th style="width:65px">รหัส</th>
+                <th>ชื่อโครงการ</th>
+                <th style="width:70px">OPM</th>
+                <th style="width:70px">BUD</th>
+                <th class="num" style="width:115px">งบรวม (บาท)</th>
+                <th class="num" style="width:115px">ใช้จริง (บาท)</th>
+                <th class="num" style="width:100px">คงเหลือ</th>
+                <th style="width:100px">%ใช้ไป</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+          <div class="empty" id="emptyMsg" style="display:none">ไม่พบโครงการที่ตรงกับการค้นหา</div>
+        </div>
+        <div class="remark" id="tableRemark"></div>
+      </div>
+    </div>
+
+    <div id="tab-chart" style="display:none">
+      <div class="section">
+        <h2>Top 15 โครงการตาม % การใช้งบ</h2>
+        <div style="display:flex;gap:8px;margin-bottom:8px;font-size:12px;color:#888;flex-wrap:wrap">
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(55,138,221,0.4)"></span>งบประมาณ</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#1D9E75"></span>ใช้จริง</span>
+        </div>
+        <div class="chart-wrap"><canvas id="barChart" role="img" aria-label="Bar chart showing top 15 projects by budget utilization">Top 15 projects by budget utilization</canvas></div>
+      </div>
+      <div class="chart-row">
+        <div class="section">
+          <h2>สัดส่วนงบแยกตาม OPM</h2>
+          <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+            <div style="position:relative;width:180px;height:180px;flex-shrink:0"><canvas id="pieChart" role="img" aria-label="Doughnut chart of budget by OPM">Budget by OPM</canvas></div>
+            <div class="legend-wrap" id="pieLegend"></div>
+          </div>
+        </div>
+        <div class="section">
+          <h2>สรุปสถานะโครงการ</h2>
+          <div style="position:relative;width:180px;height:180px;margin:0 auto"><canvas id="statusChart" role="img" aria-label="Doughnut chart of project status">Project status</canvas></div>
+          <div class="legend-wrap" id="statusLegend" style="margin-top:12px;flex-direction:row;flex-wrap:wrap;gap:12px;justify-content:center"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let projects = [];
+let barChartInst = null, pieChartInst = null, statusChartInst = null;
+
+// ---- Upload ----
+const dz = document.getElementById('dropzone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); handleFile(e.dataTransfer.files[0]); });
+document.getElementById('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
+
+function handleFile(file) {
+  if (!file) return;
+  document.getElementById('fname').textContent = '✅ โหลดแล้ว: ' + file.name;
+  const r = new FileReader();
+  r.onload = e => {
+    const wb = XLSX.read(e.target.result, { type: 'array' });
+    parseData(wb);
+  };
+  r.readAsArrayBuffer(file);
+}
+
+// ---- Parse ----
+function parseData(wb) {
+  projects = [];
+  const sheetName = wb.SheetNames.find(s => s.toLowerCase().includes('monitoring'))
+    || wb.SheetNames[1] || wb.SheetNames[0];
+  const ws = wb.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+
+  // ---- ปรับ column index ตามโครงสร้างไฟล์ของคุณ ----
+  // col 0  = No.
+  // col 2  = OPM
+  // col 3  = BUD
+  // col 5  = รหัสโครงการ
+  // col 6  = ชื่อโครงการ
+  // col 14 = Total Budget (3 month)
+  // col 16 = Total Actual (3 month)
+  // --------------------------------------------------
+
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    const no = r[0];
+    if (typeof no !== 'number' || no < 1) continue;
+
+    const opm         = r[2]  || '';
+    const bud         = r[3]  || '';
+    const code        = r[5]  || '';
+    const name        = r[6]  || '';
+    const budgetTotal = parseFloat(r[14]) || 0;
+    const actualTotal = parseFloat(r[16]) || 0;
+    const pct         = budgetTotal > 0 ? actualTotal / budgetTotal : 0;
+    const remaining   = budgetTotal - actualTotal;
+
+    if (!name) continue;
+    projects.push({ no, opm, bud, code, name, budgetTotal, actualTotal, remaining, pct });
+  }
+
+  populateFilters();
+  renderCards();
+  renderTable();
+  renderCharts();
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('asOfLabel').textContent = 'อัพเดต: ' + new Date().toLocaleDateString('th-TH');
+}
+
+// ---- Helpers ----
+const fmt  = v => (isNaN(v) || v === null) ? '-' : Math.round(v).toLocaleString('th-TH');
+const fmtM = v => {
+  if (isNaN(v) || v === null) return '-';
+  const abs = Math.abs(v), sign = v < 0 ? '-' : '';
+  if (abs >= 1e9) return sign + (abs / 1e9).toFixed(1) + 'B';
+  if (abs >= 1e6) return sign + (abs / 1e6).toFixed(1) + 'M';
+  if (abs >= 1e3) return sign + (abs / 1e3).toFixed(0) + 'K';
+  return sign + Math.round(abs).toLocaleString();
+};
+const statusClass = pct => pct > 1 ? 'over' : pct >= 0.8 ? 'warn' : 'ok';
+
+// ---- Filters ----
+function populateFilters() {
+  const opms = [...new Set(projects.map(p => p.opm).filter(Boolean))].sort();
+  const sel  = document.getElementById('filterOPM');
+  sel.innerHTML = '<option value="">OPM ทั้งหมด</option>';
+  opms.forEach(o => { const op = document.createElement('option'); op.value = o; op.textContent = o; sel.appendChild(op); });
+}
+
+// ---- Cards ----
+function renderCards() {
+  const totalBudget = projects.reduce((s, p) => s + p.budgetTotal, 0);
+  const totalActual = projects.reduce((s, p) => s + p.actualTotal, 0);
+  const totalRem    = totalBudget - totalActual;
+  const overCount   = projects.filter(p => p.pct > 1).length;
+  const avgPct      = totalBudget > 0 ? (totalActual / totalBudget * 100).toFixed(1) : 0;
+  document.getElementById('cards').innerHTML = `
+    <div class="card"><label>งบรวมทั้งหมด</label><div class="val">${fmtM(totalBudget)}</div><div class="sub">บาท / ${projects.length} โครงการ</div></div>
+    <div class="card blue"><label>ใช้จริงสะสม</label><div class="val">${fmtM(totalActual)}</div><div class="sub">${avgPct}% ของงบทั้งหมด</div></div>
+    <div class="card ${totalRem >= 0 ? 'green' : 'red'}"><label>งบคงเหลือ</label><div class="val">${fmtM(totalRem)}</div><div class="sub">บาท</div></div>
+    <div class="card amber"><label>โครงการเกินงบ</label><div class="val">${overCount}</div><div class="sub">จาก ${projects.length} โครงการ</div></div>
+  `;
+}
+
+// ---- Table ----
+function renderTable() {
+  const q      = (document.getElementById('searchBox').value || '').toLowerCase();
+  const opmF   = document.getElementById('filterOPM').value;
+  const statF  = document.getElementById('filterStatus').value;
+  const filtered = projects.filter(p => {
+    if (q && !p.name.toLowerCase().includes(q) && !p.code.toLowerCase().includes(q)) return false;
+    if (opmF && p.opm !== opmF) return false;
+    if (statF && statusClass(p.pct) !== statF) return false;
+    return true;
+  });
+  const tbody  = document.getElementById('tableBody');
+  const empty  = document.getElementById('emptyMsg');
+  const remark = document.getElementById('tableRemark');
+  if (!filtered.length) { tbody.innerHTML = ''; empty.style.display = 'block'; remark.textContent = ''; return; }
+  empty.style.display = 'none';
+  remark.textContent  = `แสดง ${filtered.length} รายการ (ทั้งหมด ${projects.length} โครงการ)`;
+  tbody.innerHTML = filtered.map(p => {
+    const sc   = statusClass(p.pct);
+    const pctN = Math.min(p.pct * 100, 999).toFixed(0);
+    const barW = Math.min(p.pct * 100, 100).toFixed(1);
+    const remColor = p.remaining >= 0 ? '#0F6E56' : '#A32D2D';
+    return `<tr>
+      <td>${p.no}</td>
+      <td style="font-size:11px;color:#888">${p.code}</td>
+      <td title="${p.name}">${p.name}</td>
+      <td style="font-size:11px;color:#555">${p.opm}</td>
+      <td style="font-size:11px;color:#555">${p.bud}</td>
+      <td class="num">${fmt(p.budgetTotal)}</td>
+      <td class="num">${fmt(p.actualTotal)}</td>
+      <td class="num" style="color:${remColor};font-weight:500">${fmt(p.remaining)}</td>
+      <td><span class="badge ${sc}">${pctN}%</span><div class="pbar-wrap"><div class="pbar ${sc}" style="width:${barW}%"></div></div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ---- Charts ----
+function renderCharts() {
+  const sorted = [...projects].sort((a, b) => b.pct - a.pct).slice(0, 15);
+  if (barChartInst) barChartInst.destroy();
+  barChartInst = new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels: sorted.map(p => p.code || p.name.substring(0, 10)),
+      datasets: [
+        { label: 'งบประมาณ', data: sorted.map(p => Math.round(p.budgetTotal)), backgroundColor: 'rgba(55,138,221,0.35)', borderColor: '#378ADD', borderWidth: 1 },
+        { label: 'ใช้จริง',  data: sorted.map(p => Math.round(p.actualTotal)), backgroundColor: '#1D9E75', borderColor: '#0F6E56', borderWidth: 1 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { font: { size: 10 }, maxRotation: 45, autoSkip: false } },
+        y: { ticks: { callback: v => fmtM(v) } }
+      }
+    }
+  });
+
+  const opmGroups = {};
+  projects.forEach(p => {
+    if (!p.opm) return;
+    if (!opmGroups[p.opm]) opmGroups[p.opm] = { budget: 0 };
+    opmGroups[p.opm].budget += p.budgetTotal;
+  });
+  const opmKeys = Object.keys(opmGroups);
+  const colors  = ['#378ADD','#1D9E75','#D85A30','#BA7517','#7F77DD','#D4537E','#888780'];
+  const totalB  = opmKeys.reduce((s, k) => s + opmGroups[k].budget, 0);
+
+  if (pieChartInst) pieChartInst.destroy();
+  pieChartInst = new Chart(document.getElementById('pieChart'), {
+    type: 'doughnut',
+    data: { labels: opmKeys, datasets: [{ data: opmKeys.map(k => Math.round(opmGroups[k].budget)), backgroundColor: colors, borderWidth: 2 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+  });
+  document.getElementById('pieLegend').innerHTML = opmKeys.map((k, i) => `
+    <div class="legend-item">
+      <span class="legend-dot" style="background:${colors[i]}"></span>
+      <span style="color:#555">${k}</span>
+      <span style="font-weight:600;margin-left:auto">${totalB > 0 ? ((opmGroups[k].budget / totalB) * 100).toFixed(0) : 0}%</span>
+    </div>`).join('');
+
+  const okCnt   = projects.filter(p => statusClass(p.pct) === 'ok').length;
+  const warnCnt = projects.filter(p => statusClass(p.pct) === 'warn').length;
+  const overCnt = projects.filter(p => statusClass(p.pct) === 'over').length;
+  if (statusChartInst) statusChartInst.destroy();
+  statusChartInst = new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: { labels: ['ปกติ','ใกล้เต็ม','เกินงบ'], datasets: [{ data: [okCnt, warnCnt, overCnt], backgroundColor: ['#1D9E75','#EF9F27','#E24B4A'], borderWidth: 2 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+  });
+  document.getElementById('statusLegend').innerHTML = [
+    { label: `ปกติ (${okCnt})`, color: '#1D9E75' },
+    { label: `ใกล้เต็ม (${warnCnt})`, color: '#EF9F27' },
+    { label: `เกินงบ (${overCnt})`, color: '#E24B4A' },
+  ].map(x => `<div class="legend-item"><span class="legend-dot" style="background:${x.color}"></span><span style="color:#555">${x.label}</span></div>`).join('');
+}
+
+// ---- Tabs ----
+function showTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-projects').style.display = name === 'projects' ? 'block' : 'none';
+  document.getElementById('tab-chart').style.display    = name === 'chart'    ? 'block' : 'none';
+}
+</script>
+</body>
+</html>
