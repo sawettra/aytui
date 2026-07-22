@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood Session — ฟังใจ ก่อนฟังเพลง</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@400;600;700&family=Noto+Sans+Thai:wght@300;400;500;600&family=Fraunces:ital,opsz@0,9..144;1,9..144&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #FBF2E4;
+    --surface: #FFFFFF;
+    --surface-soft: #F5E6CD;
+    --amber: #D2A679;
+    --teal: #70C2E6;
+    --rose: #E4785A;
+    --ink: #33261A;
+    --muted: #8A7860;
+    --line: rgba(51,38,26,0.14);
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: radial-gradient(ellipse at 20% -10%, #FFFAF1 0%, var(--bg) 55%);
+    color: var(--ink);
+    font-family: 'Noto Sans Thai', sans-serif;
+    min-height: 100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding: 48px 20px 80px;
+    line-height:1.6;
+  }
+  .eyebrow{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:13px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color: var(--muted);
+    text-align:center;
+    margin-bottom:6px;
+  }
+  .stage{
+    width:100%;
+    max-width:560px;
+  }
+  h1.title{
+    font-family:'Noto Serif Thai', serif;
+    font-weight:700;
+    font-size:26px;
+    text-align:center;
+    margin: 0 0 4px;
+    color: var(--ink);
+  }
+  .subtitle{
+    text-align:center;
+    color:var(--muted);
+    font-size:14px;
+    margin: 0 0 28px;
+  }
+
+  /* waveform signature */
+  .wave-wrap{
+    height:72px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    margin-bottom: 28px;
+    padding: 0 10px;
+  }
+  .bar{
+    width:5px;
+    border-radius:3px;
+    background: var(--muted);
+    height:14px;
+    transition: height .5s ease, background .6s ease;
+  }
+
+  .card{
+    background: var(--surface);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding: 32px 28px;
+    box-shadow: 0 24px 48px -24px rgba(51,38,26,0.28);
+  }
+
+  .progress{
+    display:flex;
+    gap:6px;
+    margin-bottom:22px;
+  }
+  .progress span{
+    height:3px;
+    flex:1;
+    border-radius:2px;
+    background: var(--line);
+    overflow:hidden;
+  }
+  .progress span i{
+    display:block;
+    height:100%;
+    width:0%;
+    background: var(--amber);
+    transition: width .4s ease;
+  }
+
+  .q-label{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:12px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color: #1E7CA8;
+    margin-bottom:10px;
+  }
+  .q-text{
+    font-family:'Noto Serif Thai', serif;
+    font-size:20px;
+    font-weight:600;
+    margin: 0 0 22px;
+  }
+
+  .choices{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .choice{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background: var(--surface-soft);
+    border:1px solid var(--line);
+    color: var(--ink);
+    text-align:left;
+    padding: 14px 16px;
+    border-radius:14px;
+    cursor:pointer;
+    font-family:'Noto Sans Thai', sans-serif;
+    font-size:15px;
+    transition: transform .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .choice:hover{
+    border-color: var(--amber);
+    transform: translateX(2px);
+    background: #F0DCB6;
+  }
+  .choice:focus-visible{
+    outline: 2px solid var(--teal);
+    outline-offset:2px;
+  }
+  .choice .dot{
+    width:8px;height:8px;border-radius:50%;
+    background: var(--muted);
+    flex-shrink:0;
+  }
+
+  /* results */
+  .result-tag{
+    display:inline-block;
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:12px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color: var(--ink);
+    background: var(--teal);
+    padding: 4px 12px;
+    border-radius: 100px;
+    margin-bottom:14px;
+  }
+  .genre{
+    font-family:'Noto Serif Thai', serif;
+    font-weight:700;
+    font-size:24px;
+    margin: 0 0 10px;
+    color: #9C6B3E;
+  }
+  .reason{
+    color: var(--muted);
+    font-size:14.5px;
+    margin-bottom:22px;
+    border-left: 2px solid var(--line);
+    padding-left:14px;
+  }
+  .songs{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom: 26px;
+  }
+  .song{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background: var(--surface-soft);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding: 12px 14px;
+  }
+  .song .num{
+    font-family:'Fraunces', serif;
+    color: #1E7CA8;
+    font-size:13px;
+    width:18px;
+    flex-shrink:0;
+  }
+  .song .meta b{ display:block; font-size:14.5px; }
+  .song .meta span{ display:block; font-size:12.5px; color:var(--muted); }
+
+  .note{
+    font-size:12.5px;
+    color: var(--muted);
+    margin-bottom:22px;
+  }
+
+  .actions{ display:flex; gap:10px; }
+  .btn{
+    flex:1;
+    padding: 13px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    font-family:'Noto Sans Thai', sans-serif;
+    font-size:14px;
+    cursor:pointer;
+  }
+  .btn.primary{
+    background: var(--amber);
+    color: #23150a;
+    border-color: var(--amber);
+    font-weight:600;
+  }
+  .btn:hover{ opacity:0.85; }
+
+  .music-toggle{
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 12px 24px -12px rgba(51,38,26,0.35);
+    transition: transform .15s ease, background .15s ease;
+    z-index: 50;
+  }
+  .music-toggle:hover{ transform: scale(1.06); }
+  .music-toggle.playing{ background: var(--teal); }
+
+  @media (prefers-reduced-motion: reduce){
+    .bar, .choice, .progress span i { transition:none; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="eyebrow">a small session for</div>
+  <h1 class="title">ฟังใจ ก่อนฟังเพลง</h1>
+  <p class="subtitle">ตอบ 5 คำถาม เพื่อดูว่าตอนนี้ใจเราอยู่ตรงไหน แล้วควรฟังเพลงแนวไหนต่อ</p>
+
+  <div class="wave-wrap" id="wave"></div>
+
+  <div class="card" id="card"></div>
+</div>
+
+<audio id="bgm" loop preload="auto">
+  <source src="bgm.mp3" type="audio/mpeg">
+</audio>
+<button id="musicToggle" class="music-toggle" aria-label="เปิด/ปิดเพลง" title="เปิด/ปิดเพลง">🔈</button>
+
+<script>
+const wave = document.getElementById('wave');
+const BAR_COUNT = 28;
+for(let i=0;i<BAR_COUNT;i++){
+  const b=document.createElement('div');
+  b.className='bar';
+  wave.appendChild(b);
+}
+function animateWave(arousal, valence){
+  const bars = wave.querySelectorAll('.bar');
+  const color = valence >= 0 ? getComputedStyle(document.documentElement).getPropertyValue('--amber')
+                             : getComputedStyle(document.documentElement).getPropertyValue('--rose');
+  const amp = 14 + (arousal+3)*8; // taller when higher arousal
+  bars.forEach((bar,i)=>{
+    const wobble = Math.sin(i*0.9 + arousal)*0.5+0.5;
+    bar.style.height = (10 + amp*wobble) + 'px';
+    bar.style.background = color;
+  });
+}
+animateWave(0,0);
+
+// ---- Background music ----
+const bgm = document.getElementById('bgm');
+const musicToggle = document.getElementById('musicToggle');
+bgm.volume = 0.5;
+let musicWanted = true; // starts muted-until-first-click due to browser autoplay rules
+
+function playMusic(){
+  bgm.play().then(()=>{
+    musicToggle.textContent = '🔊';
+    musicToggle.classList.add('playing');
+  }).catch(()=>{
+    // autoplay blocked; wait for a user gesture
+    musicToggle.textContent = '🔈';
+    musicToggle.classList.remove('playing');
+  });
+}
+function pauseMusic(){
+  bgm.pause();
+  musicToggle.textContent = '🔇';
+  musicToggle.classList.remove('playing');
+}
+musicToggle.addEventListener('click', ()=>{
+  if(bgm.paused){ musicWanted = true; playMusic(); }
+  else { musicWanted = false; pauseMusic(); }
+});
+// try to start music on the very first interaction anywhere on the page
+function tryAutoStartOnce(){
+  if(musicWanted && bgm.paused){ playMusic(); }
+  document.removeEventListener('click', tryAutoStartOnce);
+}
+document.addEventListener('click', tryAutoStartOnce);
+
+// ---- Questions (mood scoring) ----
+const moodQuestions = [
+  {
+    label: 'คำถามที่ 1 / 5',
+    text: 'ตอนนี้ร่างกายเรารู้สึกอย่างไร',
+    options: [
+      { t:'อยากลุกขึ้นทำอะไรสักอย่าง กระสับกระส่ายในใจ', a:2, v:-1 },
+      { t:'รู้สึกมีไฟ อยากลงมือทำอะไรบางอย่าง', a:2, v:1 },
+      { t:'ตัวหนักอึ้ง อยากนอนอยู่เฉยๆ ไม่อยากขยับ', a:-2, v:-1 },
+      { t:'ผ่อนคลาย สบายตัว ไม่รีบร้อน', a:-2, v:1 },
+    ]
+  },
+  {
+    label: 'คำถามที่ 2 / 5',
+    text: 'ถ้าตอนนี้ใจเราเป็นสี จะเป็นสีอะไร',
+    options: [
+      { t:'สีแดงเข้ม หรือสีดำทึบ', a:1, v:-1 },
+      { t:'สีเหลืองสดใส', a:1, v:1 },
+      { t:'สีเทาหม่นๆ', a:-1, v:-1 },
+      { t:'สีฟ้าอ่อนพาสเทล', a:-1, v:1 },
+    ]
+  },
+  {
+    label: 'คำถามที่ 3 / 5',
+    text: 'ในหัวตอนนี้มีความคิดแบบไหนวนอยู่บ่อยที่สุด',
+    options: [
+      { t:'กังวลกับเรื่องที่ยังไม่เกิดขึ้น', a:1, v:-1 },
+      { t:'ตื่นเต้นกับแผนการหรือเรื่องดีๆ ที่กำลังจะมา', a:1, v:1 },
+      { t:'คิดถึงเรื่องเศร้า หรือคนที่คิดถึง', a:-1, v:-1 },
+      { t:'ไม่ได้คิดอะไรมาก ปล่อยใจเพลินๆ', a:-1, v:1 },
+    ]
+  },
+  {
+    label: 'คำถามที่ 4 / 5',
+    text: 'ตอนนี้พลังงานในตัวเราเหลือประมาณไหน',
+    options: [
+      { t:'เหลือน้อยมาก แต่สมองยังฟุ้งอยู่ตลอด', a:1, v:-1 },
+      { t:'ยังมีเรี่ยวแรง อยากทำอะไรต่อ', a:1, v:1 },
+      { t:'หมดแรง อยากพักจริงๆ', a:-2, v:-1 },
+      { t:'กำลังดี ไม่มากไม่น้อย', a:-1, v:1 },
+    ]
+  },
+  {
+    label: 'คำถามที่ 5 / 5',
+    text: 'เวลาได้ยินเสียงรอบตัวตอนนี้ เรารู้สึกยังไง',
+    options: [
+      { t:'เสียงดังนิดเดียวก็รำคาญ ทนไม่ค่อยได้', a:1, v:-1 },
+      { t:'อยากเปิดเพลงเสียงดังๆ คลอไปด้วย', a:1, v:1 },
+      { t:'ไม่อยากได้ยินอะไรเลย อยากอยู่เงียบๆ คนเดียว', a:-1, v:-1 },
+      { t:'เสียงรอบตัวฟังดูสบายๆ ไม่รบกวนเท่าไร', a:-1, v:1 },
+    ]
+  },
+];
+
+const goalQuestion = {
+  label: 'คำถามสุดท้าย',
+  text: 'อยากให้เพลงพาความรู้สึกเราไปทางไหนต่อ',
+  options: [
+    { t:'ค่อยๆ ผ่อนคลายลง ใจเย็นลง', key:'down' },
+    { t:'ค่อยๆ มีพลังและกำลังใจขึ้น', key:'up' },
+    { t:'ปลดปล่อย/ระบายความรู้สึกออกมาให้สุด', key:'release' },
+    { t:'พาไปสู่การพักผ่อนหรือหลับสบาย', key:'sleep' },
+  ]
+};
+
+// ---- Recommendation data: [quadrant][goal] ----
+const rec = {
+  tense: {
+    label: 'ตึงเครียด / กระสับกระส่าย',
+    down: {
+      genre:'Acoustic & Lo-fi Indie — เริ่มกลางแล้วค่อยชะลอ',
+      reason:'ใช้หลัก iso-principle คือให้เพลงจังหวะปานกลางมาช่วย "รับ" ความเครียดก่อน ไม่กระโดดไปเพลงช้ามากทันที เดี๋ยวจะรู้สึกฝืน แล้วค่อยๆ ไล่จังหวะให้ช้าลงทีละขั้น',
+      songs:[
+        {title:'Breathe Me', artist:'Sia'},
+        {title:'Holocene', artist:'Bon Iver'},
+        {title:'Landslide', artist:'Fleetwood Mac'},
+      ]
+    },
+    up:{
+      genre:'Rock/Pop จังหวะกลาง-เร็ว ระบายพลังงานลบก่อน',
+      reason:'ปล่อยให้พลังลบระบายผ่านจังหวะที่หนักแน่นก่อน แล้วค่อยเปลี่ยนเป็นเพลงป็อปที่ให้ความรู้สึกฮึกเหิมกว่าเดิม',
+      songs:[
+        {title:'Roar', artist:'Katy Perry'},
+        {title:'Titanium', artist:'David Guetta ft. Sia'},
+        {title:'Eye of the Tiger', artist:'Survivor'},
+      ]
+    },
+    release:{
+      genre:'Instrumental ดราม่า — ปล่อยอารมณ์ผ่านเสียงดนตรีล้วนๆ',
+      reason:'เพลงที่ไม่มีเนื้อร้องช่วยให้เราไม่ต้องตีความคำ แต่ปล่อยให้ทำนองพาอารมณ์ออกมาเอง เหมาะกับตอนที่รู้สึกอัดอั้นจนพูดไม่ถูก',
+      songs:[
+        {title:'O Fortuna', artist:'Carl Orff'},
+        {title:'Lux Aeterna', artist:'Clint Mansell'},
+        {title:'In the End', artist:'Linkin Park'},
+      ]
+    },
+    sleep:{
+      genre:'ไล่จังหวะลงทีละขั้นสู่ Ambient',
+      reason:'จากตึงเครียดไปหลับทันทีมันไกลเกินไป ต้องมีเพลงกลางๆ คั่นก่อน แล้วค่อยลงไปที่เสียงบรรเลงช้ามากในตอนท้าย',
+      songs:[
+        {title:'Holocene', artist:'Bon Iver'},
+        {title:'Weightless', artist:'Marconi Union'},
+        {title:"The Blower's Daughter", artist:'Damien Rice'},
+      ]
+    }
+  },
+  excited:{
+    label:'ตื่นเต้น / มีพลัง',
+    down:{
+      genre:'Pop จังหวะสนุก แล้วค่อยลงสู่ Chill/Acoustic',
+      reason:'เริ่มจากเพลงที่ยังสนุกอยู่ เพื่อไม่ให้รู้สึกอารมณ์ถูกตัดฉับ แล้วค่อยๆ พาลงมาที่เพลงเบาสบายเพื่อให้ใจนิ่งลง',
+      songs:[
+        {title:'Sunday Morning', artist:'Maroon 5'},
+        {title:'Vienna', artist:'Billy Joel'},
+        {title:'Banana Pancakes', artist:'Jack Johnson'},
+      ]
+    },
+    up:{
+      genre:'Dance-pop / EDM — รักษาพลังบวกไว้',
+      reason:'ตอนนี้พลังงานกำลังดี ไม่จำเป็นต้องเปลี่ยนทิศทาง แค่เลือกเพลงที่ต่อพลังบวกให้ยาวขึ้น',
+      songs:[
+        {title:'Levitating', artist:'Dua Lipa'},
+        {title:'Uptown Funk', artist:'Bruno Mars'},
+        {title:'Good as Hell', artist:'Lizzo'},
+      ]
+    },
+    release:{
+      genre:'จังหวะเต้นได้ — ปล่อยพลังผ่านการขยับตัว',
+      reason:'พลังงานบวกแบบนี้เหมาะกับการปลดปล่อยผ่านการเคลื่อนไหว ลองขยับตัวไปกับจังหวะเพลงดูก็ช่วยได้',
+      songs:[
+        {title:"Can't Stop the Feeling", artist:'Justin Timberlake'},
+        {title:'Uptown Funk', artist:'Bruno Mars'},
+        {title:'Shut Up and Dance', artist:'WALK THE MOON'},
+      ]
+    },
+    sleep:{
+      genre:'ไล่ระดับพลังงานลงหลายขั้นก่อนถึง Ambient',
+      reason:'จากพลังงานสูงไปนอนทันทีมักไม่ได้ผล ต้องผ่านเพลงจังหวะกลางและอะคูสติกก่อน แล้วค่อยจบที่เสียงบรรเลงเบาๆ',
+      songs:[
+        {title:'Photograph', artist:'Ed Sheeran'},
+        {title:'Fix You', artist:'Coldplay'},
+        {title:'Weightless', artist:'Marconi Union'},
+      ]
+    }
+  },
+  sad:{
+    label:'เศร้า / เหนื่อยล้า / เหงา',
+    down:{
+      genre:'เพลงเศร้าเบาๆ ก่อน แล้วค่อยขยับสู่ความหวัง',
+      reason:'อย่ารีบฟังเพลงสดใสทันที เพราะใจจะรู้สึกไม่ถูกเข้าใจ ให้เริ่มจากเพลงที่เข้าใจความเศร้าเราก่อน แล้วค่อยๆ เลื่อนไปหาเพลงที่ให้ความอบอุ่นขึ้น',
+      songs:[
+        {title:'Fix You', artist:'Coldplay'},
+        {title:'Here Comes the Sun', artist:'The Beatles'},
+        {title:'Skinny Love', artist:'Bon Iver'},
+      ]
+    },
+    up:{
+      genre:'บัลลาดเศร้า ไปสู่เพลงให้กำลังใจจังหวะขึ้น',
+      reason:'ให้เพลงช้าที่เข้าใจความรู้สึกมาก่อน จากนั้นค่อยไล่ไปหาเพลงที่มีข้อความให้กำลังใจและจังหวะกระชับขึ้น',
+      songs:[
+        {title:'Rise Up', artist:'Andra Day'},
+        {title:'Stronger', artist:'Kelly Clarkson'},
+        {title:'Three Little Birds', artist:'Bob Marley'},
+      ]
+    },
+    release:{
+      genre:'บัลลาดเศร้าเต็มรูปแบบ — ให้ได้ระบายจริงๆ',
+      reason:'บางครั้งสิ่งที่ใจต้องการที่สุดคือการได้เศร้าอย่างเต็มที่ ไม่ต้องรีบดีขึ้น ปล่อยให้เพลงช่วยให้น้ำตาไหลออกมาก็ได้',
+      songs:[
+        {title:'Someone Like You', artist:'Adele'},
+        {title:'All I Want', artist:'Kodaline'},
+        {title:'Someone You Loved', artist:'Lewis Capaldi'},
+      ]
+    },
+    sleep:{
+      genre:'เปียโนเบาๆ / Ambient สำหรับปลอบใจ',
+      reason:'เสียงเปียโนช้าๆ ช่วยโอบรับความเหนื่อยล้าโดยไม่ต้องพูดอะไร แล้วพาเข้าสู่การพักผ่อนอย่างอ่อนโยน',
+      songs:[
+        {title:'River Flows in You', artist:'Yiruma'},
+        {title:'Weightless', artist:'Marconi Union'},
+        {title:'Clair de Lune', artist:'Claude Debussy'},
+      ]
+    }
+  },
+  calm:{
+    label:'สงบ / ผ่อนคลาย / พอใจ',
+    down:{
+      genre:'Ambient / เสียงธรรมชาติ — ผ่อนคลายให้ลึกขึ้น',
+      reason:'ใจตอนนี้เป็นสมดุลดีอยู่แล้ว ลองให้เสียงที่เนิบช้าลงอีกนิด เพื่อประคองความสงบนี้ให้ลึกขึ้นไปอีกขั้น',
+      songs:[
+        {title:'Weightless', artist:'Marconi Union'},
+        {title:'Spiegel im Spiegel', artist:'Arvo Pärt'},
+        {title:'River Flows in You', artist:'Yiruma'},
+      ]
+    },
+    up:{
+      genre:'Bossa nova / Soft pop — เพิ่มพลังแบบนุ่มนวล',
+      reason:'ไม่ต้องกระโดดไปเพลงเร็วจัด แค่ขยับจังหวะขึ้นทีละนิดแบบสบายๆ ก็พอ',
+      songs:[
+        {title:'Banana Pancakes', artist:'Jack Johnson'},
+        {title:'Three Little Birds', artist:'Bob Marley'},
+        {title:'Put Your Records On', artist:'Corinne Bailey Rae'},
+      ]
+    },
+    release:{
+      genre:'Singer-songwriter — สะท้อนความคิดเบาๆ',
+      reason:'ใจที่สงบมักเปิดพื้นที่ให้ทบทวนอะไรบางอย่าง ลองฟังเพลงที่ให้ความรู้สึกใคร่ครวญ อาจเจอมุมมองใหม่ๆ',
+      songs:[
+        {title:'The Night We Met', artist:'Lord Huron'},
+        {title:'Ho Hey', artist:'The Lumineers'},
+        {title:'Holocene', artist:'Bon Iver'},
+      ]
+    },
+    sleep:{
+      genre:'Ambient / Classical จังหวะช้ามาก',
+      reason:'ใจสงบอยู่แล้ว แค่ต้องการเสียงที่ช้าและเบาพอจะพาข้ามจากผ่อนคลายไปสู่การหลับ',
+      songs:[
+        {title:'Clair de Lune', artist:'Claude Debussy'},
+        {title:'Weightless', artist:'Marconi Union'},
+        {title:'Spiegel im Spiegel', artist:'Arvo Pärt'},
+      ]
+    }
+  }
+};
+
+// ---- State machine ----
+let step = 0; // 0..3 mood, 4 goal, 5 result
+let arousal = 0, valence = 0, goalKey = null;
+const card = document.getElementById('card');
+const totalSteps = moodQuestions.length + 1;
+
+function progressBar(current, total){
+  let html = '<div class="progress">';
+  for(let i=0;i<total;i++){
+    const pct = i < current ? 100 : (i===current ? 50 : 0);
+    html += `<span><i style="width:${pct}%"></i></span>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderQuestion(){
+  let q, isGoal=false;
+  if(step < moodQuestions.length){
+    q = moodQuestions[step];
+  } else {
+    q = goalQuestion;
+    isGoal = true;
+  }
+  card.innerHTML = `
+    ${progressBar(step, totalSteps)}
+    <div class="q-label">${q.label}</div>
+    <div class="q-text">${q.text}</div>
+    <div class="choices">
+      ${q.options.map((o,i)=>`<button class="choice" data-i="${i}"><span class="dot"></span>${o.t}</button>`).join('')}
+    </div>
+  `;
+  card.querySelectorAll('.choice').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const opt = q.options[parseInt(btn.dataset.i)];
+      if(isGoal){
+        goalKey = opt.key;
+      } else {
+        arousal += opt.a;
+        valence += opt.v;
+        animateWave(arousal, valence);
+      }
+      step++;
+      if(step > moodQuestions.length){
+        renderResult();
+      } else {
+        renderQuestion();
+      }
+    });
+  });
+}
+
+function getQuadrant(){
+  if(arousal>=0 && valence<0) return 'tense';
+  if(arousal>=0 && valence>=0) return 'excited';
+  if(arousal<0 && valence<0) return 'sad';
+  return 'calm';
+}
+
+function renderResult(){
+  const quad = getQuadrant();
+  const data = rec[quad][goalKey];
+  animateWave(arousal, valence);
+  card.innerHTML = `
+    <span class="result-tag">ผลลัพธ์ของตอนนี้ — ${rec[quad].label}</span>
+    <div class="genre">${data.genre}</div>
+    <div class="reason">${data.reason}</div>
+    <div class="songs">
+      ${data.songs.map((s,i)=>`
+        <div class="song">
+          <span class="num">0${i+1}</span>
+          <span class="meta"><b>${s.title}</b><span>${s.artist}</span></span>
+        </div>
+      `).join('')}
+    </div>
+    <div class="note">เพลย์ลิสต์นี้เป็นแนวทางเบื้องต้นจากหลักการดนตรีบำบัด (iso-principle) ไม่ได้แทนคำปรึกษาจากผู้เชี่ยวชาญ หากรู้สึกหนักใจต่อเนื่อง ลองพูดคุยกับคนที่ไว้ใจหรือผู้เชี่ยวชาญด้านสุขภาพจิตดูนะ</div>
+    <div class="actions">
+      <button class="btn primary" id="restart">เริ่มเซสชันใหม่</button>
+    </div>
+  `;
+  document.getElementById('restart').addEventListener('click', ()=>{
+    step=0; arousal=0; valence=0; goalKey=null;
+    animateWave(0,0);
+    renderQuestion();
+  });
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
