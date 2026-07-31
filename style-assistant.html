@@ -432,16 +432,21 @@ function shapeIconSVG(id, selected){
 }
 
 async function callClaude({system, messages, maxTokens=1200}){
-  const resp = await fetch("https://api.anthropic.com/v1/messages", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: maxTokens,
-      system,
-      messages
-    })
-  });
+  let resp;
+  try{
+    resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: maxTokens,
+        system,
+        messages
+      })
+    });
+  }catch(networkErr){
+    throw new Error("ฟีเจอร์ AI นี้ใช้งานได้เฉพาะตอนเปิดเว็บในหน้าต่างแสดงผลของ Claude.ai เท่านั้น (เปิดผ่านลิงก์ที่โฮสต์แยก เช่น GitHub Pages จะเรียก AI ไม่ได้ เพราะไม่มี API key เชื่อมอยู่)");
+  }
   if(!resp.ok){
     throw new Error("เรียก AI ไม่สำเร็จ (สถานะ " + resp.status + ")");
   }
