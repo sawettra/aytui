@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ป้ายลุค — ผู้ช่วยแต่งตัวประจำวัน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2A2420;
+    --ink-soft:#5B5147;
+    --linen:#EAE2D2;
+    --card:#FBF8F1;
+    --wine:#7C3350;
+    --wine-dark:#5E2540;
+    --sage:#6E7A56;
+    --sage-dark:#54603F;
+    --gold:#B08D57;
+    --line: rgba(42,36,32,0.14);
+    --shadow: 0 8px 24px rgba(42,36,32,0.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--linen);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(42,36,32,0.05) 1px, transparent 0);
+    background-size: 18px 18px;
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    min-height:100vh;
+  }
+  h1,h2,h3,.display{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .mono{font-family:'Space Mono', monospace;}
+
+  .app{
+    display:flex;
+    min-height:100vh;
+    max-width:1280px;
+    margin:0 auto;
+  }
+
+  /* ---------- Sidebar: clothing rack of hang-tags ---------- */
+  .rack{
+    width:220px;
+    flex-shrink:0;
+    padding:32px 16px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    position:relative;
+  }
+  .rack::before{
+    content:"";
+    position:absolute;
+    top:78px; left:16px; right:16px;
+    height:4px;
+    background:linear-gradient(90deg, transparent, var(--gold) 8%, var(--gold) 92%, transparent);
+    border-radius:2px;
+    box-shadow:0 2px 4px rgba(0,0,0,0.15);
+  }
+  .brand{
+    text-align:center;
+    margin-bottom:36px;
+  }
+  .brand .display{font-size:22px; color:var(--wine-dark); line-height:1.15;}
+  .brand .sub{font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-soft); margin-top:4px;}
+
+  .tag-nav{
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    width:100%;
+    margin-top:26px;
+  }
+  .tag-btn{
+    position:relative;
+    background:var(--card);
+    border:1.5px solid var(--line);
+    border-radius:6px 6px 6px 16px;
+    padding:12px 14px 12px 30px;
+    cursor:pointer;
+    font-family:'Work Sans', sans-serif;
+    font-size:14.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    text-align:left;
+    transition:transform .18s ease, box-shadow .18s ease, color .18s ease, border-color .18s ease;
+    transform-origin:top left;
+  }
+  .tag-btn .hole{
+    position:absolute;
+    left:10px; top:50%;
+    transform:translateY(-50%);
+    width:8px; height:8px;
+    border-radius:50%;
+    background:var(--linen);
+    border:1.5px solid var(--line);
+  }
+  .tag-btn:hover{ transform:rotate(-1.5deg) translateY(-2px); box-shadow:var(--shadow); }
+  .tag-btn.active{
+    background:var(--wine);
+    color:#fff;
+    border-color:var(--wine-dark);
+    transform:rotate(-2deg);
+    box-shadow:var(--shadow);
+  }
+  .tag-btn.active .hole{ background:var(--wine-dark); border-color:rgba(255,255,255,0.4); }
+
+  .rack-footer{
+    margin-top:auto;
+    font-size:11px;
+    color:var(--ink-soft);
+    text-align:center;
+    line-height:1.6;
+    opacity:0.7;
+    padding-top:24px;
+  }
+
+  /* ---------- Main ---------- */
+  .main{
+    flex:1;
+    padding:36px 40px 60px;
+    min-width:0;
+  }
+  .page-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:28px;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .page-head h1{ font-size:32px; margin:0; color:var(--ink);}
+  .page-head .date{ font-size:13px; color:var(--ink-soft); }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:26px;
+    box-shadow:var(--shadow);
+    margin-bottom:24px;
+  }
+  .card h2{ font-size:20px; margin:0 0 6px; color:var(--wine-dark);}
+  .card .hint{ font-size:13px; color:var(--ink-soft); margin-bottom:18px; }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:12.5px; font-weight:600; color:var(--ink-soft); margin-bottom:6px; letter-spacing:0.02em;}
+  .field input, .field select, .field textarea{
+    width:100%;
+    padding:10px 12px;
+    border-radius:8px;
+    border:1.5px solid var(--line);
+    background:#fff;
+    font-family:'Work Sans', sans-serif;
+    font-size:14px;
+    color:var(--ink);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline:2px solid var(--sage);
+    outline-offset:1px;
+    border-color:var(--sage);
+  }
+
+  .shape-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:6px; }
+  .shape-opt{
+    border:1.5px solid var(--line);
+    background:#fff;
+    border-radius:10px;
+    padding:10px 6px;
+    text-align:center;
+    cursor:pointer;
+    font-size:12px;
+    color:var(--ink-soft);
+    transition:all .15s ease;
+  }
+  .shape-opt svg{ display:block; margin:0 auto 6px; }
+  .shape-opt:hover{ border-color:var(--sage); }
+  .shape-opt.selected{ border-color:var(--wine); background:#fbeef2; color:var(--wine-dark); font-weight:600; }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:var(--wine);
+    color:#fff;
+    border:none;
+    padding:12px 22px;
+    border-radius:8px 8px 8px 2px;
+    font-family:'Work Sans', sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+    box-shadow:0 4px 10px rgba(94,37,64,0.25);
+  }
+  .btn:hover{ transform:translateY(-2px); background:var(--wine-dark); }
+  .btn:disabled{ opacity:0.55; cursor:not-allowed; transform:none; }
+  .btn.secondary{
+    background:var(--card);
+    color:var(--wine-dark);
+    border:1.5px solid var(--wine);
+    box-shadow:none;
+  }
+  .btn.secondary:hover{ background:#fbeef2; }
+  .btn.sage{ background:var(--sage); box-shadow:0 4px 10px rgba(84,96,63,0.25); }
+  .btn.sage:hover{ background:var(--sage-dark); }
+
+  .theme-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .chip{
+    padding:7px 14px;
+    border-radius:20px;
+    border:1.5px solid var(--line);
+    background:#fff;
+    font-size:13px;
+    cursor:pointer;
+    color:var(--ink-soft);
+  }
+  .chip:hover{ border-color:var(--sage); }
+  .chip.selected{ background:var(--sage); border-color:var(--sage-dark); color:#fff; font-weight:600; }
+
+  /* wardrobe */
+  .upload-zone{
+    border:2px dashed var(--line);
+    border-radius:12px;
+    padding:26px;
+    text-align:center;
+    cursor:pointer;
+    background:#fff;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .upload-zone:hover{ border-color:var(--sage); background:#fbfaf5; }
+  .upload-zone p{ margin:6px 0 0; font-size:13px; color:var(--ink-soft); }
+
+  .wardrobe-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(160px, 1fr));
+    gap:16px;
+    margin-top:20px;
+  }
+  .item-card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:10px 10px 4px 4px;
+    overflow:hidden;
+    position:relative;
+    box-shadow:0 4px 10px rgba(42,36,32,0.07);
+  }
+  .item-card .hole{
+    position:absolute; top:8px; right:8px;
+    width:9px; height:9px; border-radius:50%;
+    background:var(--linen); border:1.5px solid var(--line); z-index:2;
+  }
+  .item-card img{ width:100%; height:130px; object-fit:cover; display:block; background:var(--linen);}
+  .item-card .info{ padding:10px 12px 12px; }
+  .item-card .info .cat{ font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--sage-dark); font-weight:700;}
+  .item-card .info .name{ font-size:13.5px; font-weight:600; margin:2px 0 6px; }
+  .swatches{ display:flex; gap:4px; margin-bottom:8px;}
+  .swatch{ width:16px; height:16px; border-radius:50%; border:1px solid rgba(0,0,0,0.15); }
+  .item-card .match-btn{
+    width:100%;
+    background:none;
+    border:none;
+    border-top:1px solid var(--line);
+    padding:8px 10px;
+    font-size:12px;
+    font-weight:600;
+    color:var(--wine-dark);
+    cursor:pointer;
+    text-align:left;
+  }
+  .item-card .match-btn:hover{ background:#fbeef2; }
+  .item-card .remove-btn{
+    position:absolute; top:8px; left:8px; z-index:2;
+    width:20px;height:20px;border-radius:50%;
+    background:rgba(42,36,32,0.55); color:#fff; border:none;
+    font-size:12px; line-height:1; cursor:pointer;
+  }
+
+  .empty-note{
+    font-size:13px; color:var(--ink-soft); text-align:center; padding:20px; font-style:italic;
+  }
+
+  .loading-line{
+    display:flex; align-items:center; gap:10px;
+    font-size:13.5px; color:var(--wine-dark); font-weight:600;
+    padding:14px 0;
+  }
+  .spinner{
+    width:16px; height:16px; border-radius:50%;
+    border:2.5px solid var(--line); border-top-color:var(--wine);
+    animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* outfit ticket result */
+  .ticket{
+    background:var(--card);
+    border:1.5px solid var(--gold);
+    border-radius:4px 16px 16px 16px;
+    padding:22px 24px;
+    position:relative;
+    margin-top:18px;
+  }
+  .ticket::before{
+    content:"";
+    position:absolute; top:-9px; left:24px;
+    width:16px; height:16px; border-radius:50%;
+    background:var(--linen); border:1.5px solid var(--gold);
+  }
+  .ticket .tlabel{
+    font-size:11px; text-transform:uppercase; letter-spacing:0.1em;
+    color:var(--gold); font-weight:700; margin-bottom:6px;
+  }
+  .ticket .tsummary{ font-family:'Fraunces', serif; font-size:19px; font-weight:600; color:var(--wine-dark); margin-bottom:10px; line-height:1.35;}
+  .ticket ul{ margin:0 0 10px; padding-left:20px; }
+  .ticket li{ font-size:14px; margin-bottom:4px; }
+  .look-items{ display:flex; flex-direction:column; gap:8px; margin:6px 0 10px; }
+  .look-item-row{ display:flex; align-items:center; gap:10px; }
+  .look-item-thumb{
+    width:40px; height:40px; border-radius:8px; object-fit:cover;
+    border:1px solid var(--line); flex-shrink:0; background:#fff;
+  }
+  .look-item-icon{
+    width:40px; height:40px; border-radius:8px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:19px; border:1.5px dashed var(--line); background:#fff;
+  }
+  .look-item-text{ font-size:14px; line-height:1.4; }
+  .look-item-tag{
+    display:inline-block; font-size:10.5px; font-weight:700; color:var(--sage-dark);
+    background:#eef1e9; border-radius:6px; padding:1px 6px; margin-left:6px; vertical-align:middle;
+  }
+  .ticket .tip{
+    font-size:13px; color:var(--ink-soft); border-top:1px dashed var(--line);
+    padding-top:10px; margin-top:10px; font-style:italic;
+  }
+
+  .options-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:16px; margin-top:18px;}
+
+  .palette-row{ display:flex; gap:10px; margin:14px 0; flex-wrap:wrap; }
+  .palette-sw{ text-align:center; }
+  .palette-sw .box{ width:52px; height:52px; border-radius:10px; border:1px solid rgba(0,0,0,0.1); box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+  .palette-sw .hex{ font-size:10.5px; margin-top:4px; color:var(--ink-soft); }
+
+  .select-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
+  .select-tag{
+    padding:8px 14px; border-radius:20px; border:1.5px solid var(--line);
+    background:#fff; font-size:13px; cursor:pointer; color:var(--ink-soft);
+  }
+  .select-tag.selected{ background:var(--wine); border-color:var(--wine-dark); color:#fff; font-weight:600;}
+
+  .error-box{
+    background:#fdeceb; border:1px solid #e2a29b; color:#8a2f26;
+    padding:12px 16px; border-radius:8px; font-size:13.5px; margin-top:12px;
+  }
+
+  @media (max-width: 820px){
+    .app{ flex-direction:column; }
+    .rack{ width:100%; flex-direction:row; flex-wrap:wrap; padding:20px; }
+    .rack::before{ display:none; }
+    .brand{ width:100%; margin-bottom:16px; }
+    .tag-nav{ flex-direction:row; flex-wrap:wrap; margin-top:0; }
+    .tag-btn{ flex:1 1 auto; }
+    .grid2{ grid-template-columns:1fr; }
+    .main{ padding:24px 18px 50px; }
+    .rack-footer{ display:none; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const SHAPES = [
+  {id:'hourglass', label:'นาฬิกาทราย'},
+  {id:'pear', label:'ลูกแพร์'},
+  {id:'apple', label:'แอปเปิ้ล'},
+  {id:'rectangle', label:'สี่เหลี่ยม'},
+  {id:'invtriangle', label:'สามเหลี่ยมกลับ'},
+];
+const THEME_PRESETS = ['ทำงาน','แคชชวล','เดท','ปาร์ตี้','เที่ยวทะเล','ออกกำลังกาย','งานทางการ'];
+
+const state = {
+  tab: 'profile',
+  profile: {height:'', weight:'', bust:'', waist:'', hip:'', shape:''},
+  theme: '',
+  wardrobe: [],
+  uploading: false,
+  uploadError: '',
+  dailyLook: null,
+  dailyLoading: false,
+  dailyError: '',
+  itemMatch: null,
+  itemMatchLoadingId: null,
+  itemMatchError: '',
+  colorSelected: [],
+  colorResult: null,
+  colorLoading: false,
+  colorError: '',
+  lookOptions: null,
+  optionsLoading: false,
+  optionsError: '',
+};
+
+function esc(str){
+  return String(str==null?'':str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function shapeIconSVG(id, selected){
+  const stroke = selected ? '#7C3350' : '#5B5147';
+  const attrs = `viewBox="0 0 40 48" width="34" height="40" fill="none" stroke="${stroke}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
+  const paths = {
+    hourglass: 'M10 4 H30 L22 24 L30 44 H10 L18 24 Z',
+    pear: 'M20 4 C24 4 24 12 20 16 C30 18 32 32 22 40 C14 46 4 40 6 30 C8 20 16 18 14 12 C12 8 16 4 20 4 Z',
+    apple: 'M20 8 C30 6 34 18 30 28 C27 38 14 42 9 34 C4 26 6 12 14 8 C16 7 18 8 20 8 Z',
+    rectangle: 'M12 4 H28 V44 H12 Z',
+    invtriangle: 'M6 6 H34 L22 44 L18 44 Z'
+  };
+  return `<svg ${attrs}><path d="${paths[id]}"/></svg>`;
+}
+
+async function callClaude({system, messages, maxTokens=1200}){
+  const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: maxTokens,
+      system,
+      messages
+    })
+  });
+  if(!resp.ok){
+    throw new Error("เรียก AI ไม่สำเร็จ (สถานะ " + resp.status + ")");
+  }
+  const data = await resp.json();
+  const text = (data.content||[]).map(b=>b.text||"").join("\n").trim();
+  return text;
+}
+
+function parseJSONLoose(text){
+  let cleaned = text.replace(/```json/gi,'').replace(/```/g,'').trim();
+  const first = cleaned.indexOf('{');
+  const firstArr = cleaned.indexOf('[');
+  let start = first;
+  if(firstArr !== -1 && (first === -1 || firstArr < first)) start = firstArr;
+  if(start > 0) cleaned = cleaned.slice(start);
+  return JSON.parse(cleaned);
+}
+
+function fileToBase64(file){
+  return new Promise((res,rej)=>{
+    const r = new FileReader();
+    r.onload = ()=> res(r.result.split(',')[1]);
+    r.onerror = ()=> rej(new Error("อ่านไฟล์รูปไม่สำเร็จ"));
+    r.readAsDataURL(file);
+  });
+}
+
+function profileSummary(){
+  const p = state.profile;
+  let parts = [];
+  if(p.shape) parts.push('ทรงร่างกาย: ' + (SHAPES.find(s=>s.id===p.shape)||{}).label);
+  if(p.height) parts.push('ส่วนสูง ' + p.height + ' ซม.');
+  if(p.weight) parts.push('น้ำหนัก ' + p.weight + ' กก.');
+  if(p.bust||p.waist||p.hip) parts.push('รอบอก/เอว/สะโพก ' + (p.bust||'-') + '/' + (p.waist||'-') + '/' + (p.hip||'-') + ' ซม.');
+  return parts.length ? parts.join(', ') : 'ยังไม่ได้กรอกสัดส่วน';
+}
+
+function categoryIcon(text){
+  const t = (text||'');
+  const map = [
+    [/หมวก/, '🎩'], [/แว่น/, '🕶️'], [/รองเท้า/, '👟'], [/กระเป๋า/, '👜'],
+    [/กระโปรง/, '👗'], [/เดรส|ชุด/, '👗'], [/แจ็คเก็ต|เสื้อคลุม|โค้ท/, '🧥'],
+    [/กางเกง/, '👖'], [/เสื้อ/, '👕'], [/สร้อย|ต่างหู|กำไล|เครื่องประดับ/, '💍'],
+    [/ผ้าพันคอ/, '🧣'], [/ถุงเท้า/, '🧦'], [/เข็มขัด/, '👔'],
+  ];
+  for(const [re, icon] of map) if(re.test(t)) return icon;
+  return '✨';
+}
+
+function renderLookItems(items){
+  if(!items || items.length===0) return '';
+  const rows = items.map(it=>{
+    if(typeof it === 'string'){
+      return `<div class="look-item-row"><div class="look-item-icon">${categoryIcon(it)}</div><div class="look-item-text">${esc(it)}</div></div>`;
+    }
+    const w = it.wardrobe_id ? state.wardrobe.find(x=>x.id===it.wardrobe_id) : null;
+    const thumb = w
+      ? `<img class="look-item-thumb" src="${w.image}" alt="${esc(w.name)}">`
+      : `<div class="look-item-icon">${categoryIcon(it.text)}</div>`;
+    const tag = w ? `<span class="look-item-tag">จากตู้เสื้อผ้า</span>` : '';
+    return `<div class="look-item-row">${thumb}<div class="look-item-text">${esc(it.text)}${tag}</div></div>`;
+  }).join('');
+  return `<div class="look-items">${rows}</div>`;
+}
+
+function wardrobeSummary(){
+  if(state.wardrobe.length===0) return 'ยังไม่มีไอเทมในตู้เสื้อผ้า';
+  return state.wardrobe.map(w => `[${w.id}] ${w.category}: ${w.name}, สี ${w.colors.join('/')}, สไตล์ ${w.style}`).join('\n');
+}
+
+/* ---------- Render ---------- */
+
+function render(){
+  const app = document.getElementById('app');
+  const todayStr = new Date().toLocaleDateString('th-TH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  const navItems = [
+    {id:'profile', label:'โปรไฟล์'},
+    {id:'wardrobe', label:'ตู้เสื้อผ้า'},
+    {id:'today', label:'ลุคประจำวัน'},
+    {id:'colormatch', label:'จับคู่สี'},
+  ];
+
+  const navHTML = navItems.map(n => `
+    <button class="tag-btn ${state.tab===n.id?'active':''}" data-tab="${n.id}">
+      <span class="hole"></span>${esc(n.label)}
+    </button>`).join('');
+
+  app.innerHTML = `
+    <div class="app">
+      <div class="rack">
+        <div class="brand">
+          <div class="display">Style Tag Studio</div>
+        </div>
+        <div class="tag-nav">${navHTML}</div>
+        <div class="rack-footer">สัดส่วนและตู้เสื้อผ้า<br>จะหายเมื่อปิดหน้านี้</div>
+      </div>
+      <div class="main" id="main-panel"></div>
+    </div>
+  `;
+
+  document.querySelectorAll('.tag-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ state.tab = btn.dataset.tab; render(); });
+  });
+
+  const panel = document.getElementById('main-panel');
+  if(state.tab==='profile') panel.innerHTML = renderProfile(todayStr);
+  else if(state.tab==='wardrobe') panel.innerHTML = renderWardrobe();
+  else if(state.tab==='today') panel.innerHTML = renderToday(todayStr);
+  else if(state.tab==='colormatch') panel.innerHTML = renderColorMatch();
+
+  bindPanelEvents();
+}
+
+function renderProfile(todayStr){
+  const p = state.profile;
+  const shapeGrid = SHAPES.map(s => `
+    <div class="shape-opt ${p.shape===s.id?'selected':''}" data-shape="${s.id}">
+      ${shapeIconSVG(s.id, p.shape===s.id)}
+      ${esc(s.label)}
+    </div>`).join('');
+  const chips = THEME_PRESETS.map(t => `
+    <div class="chip ${state.theme===t?'selected':''}" data-theme="${esc(t)}">${esc(t)}</div>`).join('');
+
+  return `
+    <div class="page-head">
+      <h1>โปรไฟล์สัดส่วน</h1>
+      <div class="date mono">${esc(todayStr)}</div>
+    </div>
+    <div class="card">
+      <h2>สัดส่วนร่างกาย</h2>
+      <div class="hint">กรอกได้ทั้งตัวเลขและ/หรือเลือกทรงร่างกาย เพื่อให้ AI แนะนำลุคได้แม่นยำขึ้น</div>
+      <div class="grid2">
+        <div class="field"><label>ส่วนสูง (ซม.)</label><input type="number" id="f-height" value="${esc(p.height)}"></div>
+        <div class="field"><label>น้ำหนัก (กก.)</label><input type="number" id="f-weight" value="${esc(p.weight)}"></div>
+        <div class="field"><label>รอบอก (ซม.)</label><input type="number" id="f-bust" value="${esc(p.bust)}"></div>
+        <div class="field"><label>รอบเอว (ซม.)</label><input type="number" id="f-waist" value="${esc(p.waist)}"></div>
+        <div class="field"><label>รอบสะโพก (ซม.)</label><input type="number" id="f-hip" value="${esc(p.hip)}"></div>
+      </div>
+      <div class="field">
+        <label>ทรงร่างกาย (เลือกได้ถ้าไม่แน่ใจตัวเลข)</label>
+        <div class="shape-grid">${shapeGrid}</div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>ธีมประจำวันนี้</h2>
+      <div class="hint">เลือกธีมสำเร็จรูป หรือพิมพ์ธีมของคุณเอง</div>
+      <div class="field"><input type="text" id="f-theme" placeholder="เช่น ไปงานแต่งเพื่อนตอนเย็น" value="${esc(state.theme)}"></div>
+      <div class="theme-chips">${chips}</div>
+    </div>
+  `;
+}
+
+function renderWardrobe(){
+  const items = state.wardrobe.map(item => `
+    <div class="item-card" data-id="${item.id}">
+      <span class="hole"></span>
+      <button class="remove-btn" data-remove="${item.id}" title="ลบ">×</button>
+      <img src="${item.image}" alt="${esc(item.name)}">
+      <div class="info">
+        <div class="cat">${esc(item.category)}</div>
+        <div class="name">${esc(item.name)}</div>
+        <div class="swatches">${item.colors.map(c=>`<div class="swatch" style="background:${esc(c)}"></div>`).join('')}</div>
+      </div>
+      <button class="match-btn" data-match="${item.id}" ${state.itemMatchLoadingId===item.id?'disabled':''}>
+        ${state.itemMatchLoadingId===item.id ? 'กำลังหา...' : 'หาไอเทมที่เข้ากัน →'}
+      </button>
+    </div>
+  `).join('');
+
+  let matchBlock = '';
+  if(state.itemMatchError) matchBlock += `<div class="error-box">${esc(state.itemMatchError)}</div>`;
+  if(state.itemMatch){
+    const src = state.wardrobe.find(w=>w.id===state.itemMatch.itemId);
+    matchBlock += `
+      <div class="card">
+        <h2>ไอเทมที่เข้ากับ ${esc(src ? src.name : '')}</h2>
+        <div class="ticket">
+          <div class="tlabel">จับคู่แล้ว</div>
+          <ul>${(state.itemMatch.result.pairing||[]).map(p=>`<li>${esc(p)}</li>`).join('')}</ul>
+          ${state.itemMatch.result.reason ? `<div class="tip">${esc(state.itemMatch.result.reason)}</div>` : ''}
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="page-head">
+      <h1>ตู้เสื้อผ้า</h1>
+      <div class="date mono">${state.wardrobe.length} ชิ้น</div>
+    </div>
+    <div class="card">
+      <h2>เพิ่มไอเทมใหม่</h2>
+      <div class="hint">อัปโหลดรูปเสื้อผ้า/เครื่องประดับ แล้ว AI จะวิเคราะห์ประเภท สี และสไตล์ให้อัตโนมัติ</div>
+      <div class="upload-zone" id="upload-zone">
+        <div class="display" style="font-size:20px;color:#7C3350;">🏷️ อัปโหลดรูปภาพ</div>
+        <p>คลิกเพื่อเลือกรูป (เลือกได้หลายไฟล์)</p>
+        <input type="file" id="file-input" accept="image/*" multiple style="display:none;">
+      </div>
+      ${state.uploading ? `<div class="loading-line"><div class="spinner"></div>กำลังวิเคราะห์รูปภาพ...</div>` : ''}
+      ${state.uploadError ? `<div class="error-box">${esc(state.uploadError)}</div>` : ''}
+    </div>
+    <div class="card">
+      <h2>ไอเทมทั้งหมด</h2>
+      ${state.wardrobe.length===0
+        ? `<div class="empty-note">ยังไม่มีไอเทมในตู้เสื้อผ้า ลองอัปโหลดรูปด้านบนดูก่อนนะ</div>`
+        : `<div class="wardrobe-grid">${items}</div>`}
+    </div>
+    ${matchBlock}
+  `;
+}
+
+function renderToday(todayStr){
+  let dailyBlock = '';
+  if(state.dailyError) dailyBlock += `<div class="error-box">${esc(state.dailyError)}</div>`;
+  if(state.dailyLook){
+    const d = state.dailyLook;
+    dailyBlock += `
+      <div class="ticket">
+        <div class="tlabel">ลุคของวันนี้</div>
+        <div class="tsummary">${esc(d.summary)}</div>
+        ${renderLookItems(d.items)}
+        ${d.why ? `<div style="font-size:13.5px;color:var(--ink-soft);margin-bottom:6px;">${esc(d.why)}</div>` : ''}
+        ${d.tip ? `<div class="tip">💡 ${esc(d.tip)}</div>` : ''}
+      </div>`;
+  }
+
+  let optionsBlock = '';
+  if(state.optionsError) optionsBlock += `<div class="error-box">${esc(state.optionsError)}</div>`;
+  if(state.lookOptions){
+    optionsBlock += `<div class="options-grid">` + state.lookOptions.map((opt,i)=>`
+      <div class="ticket">
+        <div class="tlabel">ตัวเลือกที่ ${i+1}</div>
+        <div class="tsummary">${esc(opt.label)}</div>
+        ${renderLookItems(opt.items)}
+        ${opt.note ? `<div class="tip">${esc(opt.note)}</div>` : ''}
+      </div>`).join('') + `</div>`;
+  }
+
+  return `
+    <div class="page-head">
+      <h1>ลุคประจำวันนี้</h1>
+      <div class="date mono">${esc(todayStr)}</div>
+    </div>
+    <div class="card">
+      <h2>สุ่มลุคให้เข้ากับสัดส่วน</h2>
+      <div class="hint">${esc(profileSummary() + (state.theme ? (' · ธีม: ' + state.theme) : ''))}</div>
+      <button class="btn" id="btn-random-look" ${state.dailyLoading?'disabled':''}>
+        ${state.dailyLoading ? 'กำลังสุ่ม...' : '🎲 สุ่มลุคประจำวัน'}
+      </button>
+      ${state.dailyLoading ? `<div class="loading-line"><div class="spinner"></div>กำลังคิดลุคที่เหมาะกับคุณ...</div>` : ''}
+      ${dailyBlock}
+    </div>
+    <div class="card">
+      <h2>แมตลุคให้เลือกหลายแบบ</h2>
+      <div class="hint">ให้ AI จัด 3 ลุคจากตู้เสื้อผ้าของคุณให้เลือกเปรียบเทียบ</div>
+      <button class="btn sage" id="btn-look-options" ${state.optionsLoading?'disabled':''}>
+        ${state.optionsLoading ? 'กำลังจัดลุค...' : '👗 สร้างตัวเลือกลุค'}
+      </button>
+      ${state.optionsLoading ? `<div class="loading-line"><div class="spinner"></div>กำลังจัดตัวเลือกให้...</div>` : ''}
+      ${optionsBlock}
+    </div>
+  `;
+}
+
+function renderColorMatch(){
+  const selectRow = state.wardrobe.length===0
+    ? `<div class="empty-note">ยังไม่มีไอเทมในตู้เสื้อผ้า ไปที่แท็บ "ตู้เสื้อผ้า" เพื่ออัปโหลดรูปก่อนนะ</div>`
+    : `<div class="select-row">${state.wardrobe.map(w=>`
+        <div class="select-tag ${state.colorSelected.includes(w.id)?'selected':''}" data-color-id="${w.id}">
+          ${esc(w.category)}: ${esc(w.name)}
+        </div>`).join('')}</div>`;
+
+  let resultBlock = '';
+  if(state.colorError) resultBlock += `<div class="error-box">${esc(state.colorError)}</div>`;
+  if(state.colorResult){
+    const r = state.colorResult;
+    resultBlock += `
+      <div class="ticket">
+        <div class="tlabel">${esc(r.harmony_type || 'ผลการวิเคราะห์')}</div>
+        <div class="tsummary">${esc(r.verdict)}</div>
+        <div class="palette-row">${(r.suggested_palette||[]).map(hex=>`
+          <div class="palette-sw">
+            <div class="box" style="background:${esc(hex)}"></div>
+            <div class="hex mono">${esc(hex)}</div>
+          </div>`).join('')}</div>
+        ${r.tip ? `<div class="tip">${esc(r.tip)}</div>` : ''}
+      </div>`;
+  }
+
+  return `
+    <div class="page-head"><h1>จับคู่สี</h1></div>
+    <div class="card">
+      <h2>เลือกไอเทมที่จะเช็คสี</h2>
+      <div class="hint">เลือกไอเทมตั้งแต่ 2 ชิ้นขึ้นไปจากตู้เสื้อผ้า เพื่อให้ AI วิเคราะห์การเข้ากันของสี</div>
+      ${selectRow}
+      <div style="margin-top:16px;">
+        <button class="btn" id="btn-color-match" ${(state.colorLoading || state.colorSelected.length<2)?'disabled':''}>
+          ${state.colorLoading ? 'กำลังวิเคราะห์...' : '🎨 วิเคราะห์การเข้ากันของสี'}
+        </button>
+      </div>
+      ${(state.colorSelected.length<2 && state.wardrobe.length>0) ? `<div class="hint" style="margin-top:8px;">เลือกอย่างน้อย 2 ชิ้น</div>` : ''}
+      ${state.colorLoading ? `<div class="loading-line"><div class="spinner"></div>กำลังวิเคราะห์สี...</div>` : ''}
+      ${resultBlock}
+    </div>
+  `;
+}
+
+/* ---------- Events ---------- */
+
+function bindPanelEvents(){
+  if(state.tab==='profile'){
+    const map = {'f-height':'height','f-weight':'weight','f-bust':'bust','f-waist':'waist','f-hip':'hip'};
+    Object.keys(map).forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.addEventListener('input', ()=>{ state.profile[map[id]] = el.value; });
+    });
+    const themeInput = document.getElementById('f-theme');
+    if(themeInput) themeInput.addEventListener('input', ()=>{ state.theme = themeInput.value; });
+    document.querySelectorAll('.shape-opt').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const id = el.dataset.shape;
+        state.profile.shape = state.profile.shape===id ? '' : id;
+        render();
+      });
+    });
+    document.querySelectorAll('.chip').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const t = el.dataset.theme;
+        state.theme = state.theme===t ? '' : t;
+        render();
+      });
+    });
+  }
+
+  if(state.tab==='wardrobe'){
+    const zone = document.getElementById('upload-zone');
+    const fileInput = document.getElementById('file-input');
+    if(zone && fileInput){
+      zone.addEventListener('click', ()=> fileInput.click());
+      fileInput.addEventListener('change', (ev)=>{ handleUpload(ev.target.files); fileInput.value=''; });
+    }
+    document.querySelectorAll('[data-remove]').forEach(btn=>{
+      btn.addEventListener('click', (ev)=>{
+        ev.stopPropagation();
+        state.wardrobe = state.wardrobe.filter(w=>w.id!==btn.dataset.remove);
+        render();
+      });
+    });
+    document.querySelectorAll('[data-match]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const item = state.wardrobe.find(w=>w.id===btn.dataset.match);
+        if(item) findMatchForItem(item);
+      });
+    });
+  }
+
+  if(state.tab==='today'){
+    const btnRandom = document.getElementById('btn-random-look');
+    if(btnRandom) btnRandom.addEventListener('click', randomizeDailyLook);
+    const btnOptions = document.getElementById('btn-look-options');
+    if(btnOptions) btnOptions.addEventListener('click', generateLookOptions);
+  }
+
+  if(state.tab==='colormatch'){
+    document.querySelectorAll('[data-color-id]').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const id = el.dataset.colorId;
+        state.colorSelected = state.colorSelected.includes(id)
+          ? state.colorSelected.filter(x=>x!==id)
+          : [...state.colorSelected, id];
+        render();
+      });
+    });
+    const btnColor = document.getElementById('btn-color-match');
+    if(btnColor) btnColor.addEventListener('click', runColorMatch);
+  }
+}
+
+/* ---------- Actions ---------- */
+
+async function handleUpload(fileList){
+  const files = Array.from(fileList);
+  if(files.length===0) return;
+  state.uploading = true; state.uploadError = ''; render();
+  try{
+    for(const file of files){
+      const base64 = await fileToBase64(file);
+      const mediaType = file.type || 'image/jpeg';
+      const text = await callClaude({
+        system: "คุณคือผู้เชี่ยวชาญด้านแฟชั่นที่วิเคราะห์รูปเสื้อผ้า/เครื่องประดับจากภาพ ตอบกลับเป็น JSON เท่านั้น ห้ามมีข้อความอื่นนอกเหนือจาก JSON ห้ามใส่ ```",
+        messages: [{
+          role:"user",
+          content:[
+            {type:"image", source:{type:"base64", media_type:mediaType, data:base64}},
+            {type:"text", text:"วิเคราะห์ไอเทมแฟชั่นในรูปนี้ ตอบเป็น JSON รูปแบบ: {\"category\": \"หมวด เช่น หมวก/เสื้อ/กางเกง/กระโปรง/รองเท้า/กระเป๋า/เครื่องประดับ/ชุด/แจ็คเก็ต\", \"name\": \"ชื่อสั้นๆ ภาษาไทย เช่น หมวกปีกกว้างสีครีม\", \"colors\": [\"ชื่อสีเป็นค่า hex เช่น #E5D9C3\"], \"style\": \"สไตล์ เช่น มินิมอล/สตรีท/หวาน/เรียบหรู\"}"}
+          ]
+        }],
+        maxTokens: 500
+      });
+      const parsed = parseJSONLoose(text);
+      const id = 'i' + Date.now() + Math.floor(Math.random()*1000);
+      const thumb = 'data:' + mediaType + ';base64,' + base64;
+      state.wardrobe.push({
+        id, image: thumb,
+        category: parsed.category || 'ไม่ระบุ',
+        name: parsed.name || file.name,
+        colors: Array.isArray(parsed.colors) ? parsed.colors : ['#CCCCCC'],
+        style: parsed.style || 'ไม่ระบุ'
+      });
+    }
+  }catch(err){
+    state.uploadError = err.message || 'เกิดข้อผิดพลาดในการวิเคราะห์รูป';
+  }finally{
+    state.uploading = false; render();
+  }
+}
+
+async function findMatchForItem(item){
+  state.itemMatchLoadingId = item.id; state.itemMatchError=''; state.itemMatch=null; render();
+  try{
+    const others = state.wardrobe.filter(w=>w.id!==item.id);
+    const text = await callClaude({
+      system:"คุณคือสไตลิสต์แฟชั่นมืออาชีพ ช่วยแนะนำการจับคู่เสื้อผ้าที่เข้ากับไอเทมที่กำหนด ตอบเป็น JSON เท่านั้น ห้ามมี ``` หรือข้อความอื่น",
+      messages:[{role:"user", content:
+`ผู้ใช้ต้องการหาไอเทมที่เข้ากับ: [${item.id}] ${item.category} "${item.name}" สี ${item.colors.join('/')} สไตล์ ${item.style}
+
+ข้อมูลผู้ใช้: ${profileSummary()}
+ธีมวันนี้: ${state.theme || 'ไม่ระบุ'}
+
+ไอเทมอื่นในตู้เสื้อผ้า:
+${others.length ? others.map(w => `[${w.id}] ${w.category}: ${w.name}, สี ${w.colors.join('/')}, สไตล์ ${w.style}`).join('\n') : 'ไม่มีไอเทมอื่น'}
+
+ให้แนะนำชุดที่เข้ากับไอเทมนี้ ถ้ามีไอเทมอื่นในตู้ที่เข้ากันให้เลือกใช้ (อ้างอิง id) ถ้าไม่มีให้แนะนำไอเดียเพิ่มเติมทั่วไป
+ตอบเป็น JSON: {"pairing": ["รายการไอเทมที่แนะนำให้ใส่คู่กัน (ระบุจากตู้เสื้อผ้าถ้ามี หรือบรรยายทั่วไป)"], "reason": "เหตุผลสั้นๆ ว่าทำไมเข้ากัน"}`
+      }],
+      maxTokens: 700
+    });
+    state.itemMatch = {itemId:item.id, result: parseJSONLoose(text)};
+  }catch(err){
+    state.itemMatchError = err.message || 'หาไอเทมที่เข้ากันไม่สำเร็จ';
+  }finally{
+    state.itemMatchLoadingId = null; render();
+  }
+}
+
+async function randomizeDailyLook(){
+  state.dailyLoading = true; state.dailyError=''; state.dailyLook=null; render();
+  try{
+    const text = await callClaude({
+      system:"คุณคือสไตลิสต์แฟชั่นมืออาชีพ ช่วยแนะนำลุคการแต่งตัวประจำวันที่เหมาะกับสัดส่วนร่างกายและธีมของผู้ใช้ ตอบเป็น JSON เท่านั้น ห้ามมี ``` หรือข้อความอื่น",
+      messages:[{role:"user", content:
+`ข้อมูลผู้ใช้:
+${profileSummary()}
+ธีมวันนี้: ${state.theme || 'ไม่ได้ระบุ (เลือกให้เหมาะกับชีวิตประจำวันทั่วไป)'}
+
+ไอเทมในตู้เสื้อผ้า:
+${wardrobeSummary()}
+
+กรุณาสุ่ม/แนะนำลุคการแต่งตัว 1 ชุดที่เข้ากับสัดส่วนร่างกายและธีมข้างต้น ประกอบด้วยไอเทม 3-5 ชิ้น ถ้ามีไอเทมในตู้เสื้อผ้าที่เข้ากันให้เลือกใช้ไอเทมนั้นโดยใส่ wardrobe_id ตรงกับ id จริง ถ้าไม่มีไอเทมที่เหมาะให้ใส่ wardrobe_id เป็น null แล้วบรรยายไอเดียทั่วไปแทน
+ตอบเป็น JSON: {"summary": "ชื่อลุคสั้นๆ ที่ชวนให้อยากลอง", "items": [{"text": "คำอธิบายไอเทมชิ้นนี้", "wardrobe_id": "ใส่ id จากตู้เสื้อผ้าถ้าใช้ของที่มีจริง หรือ null ถ้าเป็นไอเดียทั่วไป"}], "why": "เหตุผลสั้นๆ ว่าทำไมเหมาะกับสัดส่วนนี้", "tip": "เคล็ดลับเสริมความมั่นใจ 1 ประโยค"}`
+      }]
+    });
+    state.dailyLook = parseJSONLoose(text);
+  }catch(err){
+    state.dailyError = err.message || 'สุ่มลุคไม่สำเร็จ ลองใหม่อีกครั้ง';
+  }finally{
+    state.dailyLoading = false; render();
+  }
+}
+
+async function generateLookOptions(){
+  state.optionsLoading = true; state.optionsError=''; state.lookOptions=null; render();
+  try{
+    const text = await callClaude({
+      system:"คุณคือสไตลิสต์แฟชั่นมืออาชีพ ตอบเป็น JSON เท่านั้น ห้ามมี ``` หรือข้อความอื่น",
+      messages:[{role:"user", content:
+`ข้อมูลผู้ใช้:
+${profileSummary()}
+ธีมวันนี้: ${state.theme || 'ไม่ระบุ'}
+
+ไอเทมในตู้เสื้อผ้า:
+${wardrobeSummary()}
+
+กรุณาแนะนำลุคการแต่งตัว 3 ชุดที่แตกต่างกัน แต่ละชุดมีไอเทม 3-5 ชิ้น ให้เลือกใช้ไอเทมจากตู้เสื้อผ้าถ้ามี (ใส่ wardrobe_id ตรงกับ id จริง) ถ้าไอเทมไม่พอให้เสริมไอเดียทั่วไปโดยใส่ wardrobe_id เป็น null
+ตอบเป็น JSON array: [{"label": "ชื่อลุค เช่น ลุคที่ 1: มินิมอลเรียบหรู", "items": [{"text": "คำอธิบายไอเทม", "wardrobe_id": "id จากตู้เสื้อผ้า หรือ null"}], "note": "จุดเด่นของลุคนี้ 1 ประโยค"}, ...] ให้มี 3 รายการ`
+      }],
+      maxTokens: 1200
+    });
+    const parsed = parseJSONLoose(text);
+    state.lookOptions = Array.isArray(parsed) ? parsed : (parsed.options || []);
+  }catch(err){
+    state.optionsError = err.message || 'สร้างตัวเลือกลุคไม่สำเร็จ';
+  }finally{
+    state.optionsLoading = false; render();
+  }
+}
+
+async function runColorMatch(){
+  state.colorLoading = true; state.colorError=''; state.colorResult=null; render();
+  try{
+    const items = state.wardrobe.filter(w=>state.colorSelected.includes(w.id));
+    const text = await callClaude({
+      system:"คุณคือผู้เชี่ยวชาญด้านทฤษฎีสีและการแต่งตัว ตอบเป็น JSON เท่านั้น ห้ามมี ``` หรือข้อความอื่น",
+      messages:[{role:"user", content:
+`วิเคราะห์การจับคู่สีของไอเทมต่อไปนี้:
+${items.map(w=>`[${w.id}] ${w.category} "${w.name}" สี ${w.colors.join('/')}`).join('\n')}
+
+ธีมวันนี้: ${state.theme || 'ไม่ระบุ'}
+
+ตอบเป็น JSON: {"verdict": "สรุปว่าสีเข้ากันดีแค่ไหน (1 ประโยค)", "harmony_type": "ประเภทความเข้ากันของสี เช่น โทนสีเดียว/สีตรงข้าม/สีข้างเคียง", "suggested_palette": ["hex code อีก 2-3 สีที่ควรเพิ่มเพื่อให้ชุดสมบูรณ์"], "tip": "คำแนะนำสั้นๆ เพิ่มเติม"}`
+      }],
+      maxTokens: 500
+    });
+    state.colorResult = parseJSONLoose(text);
+  }catch(err){
+    state.colorError = err.message || 'วิเคราะห์สีไม่สำเร็จ';
+  }finally{
+    state.colorLoading = false; render();
+  }
+}
+
+render();
+</script>
+</body>
+</html>
